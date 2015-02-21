@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+set -x
+
+DEVICE=${1}
+
+if [[ -z $DEVICE ]]; then
+    echo "Need to Pass a device name as arg1." 1>&2
+    exit 1
+fi
+
+PARTITION_COUNT=$(grep $(echo $DEVICE | cut -d '/' -f3) /proc/partitions | wc -l)
+if [ "$PARTITION_COUNT" -gt "1" ]; then
+    echo "Device already partitioned!!! Please use a new device" 1>&2
+    exit 1
+fi
+
+fdisk ${DEVICE} <<EOF
+n
+p
+1
+
+
+w
+EOF

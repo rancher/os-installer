@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -e
+set -x
+
+DEVICE=${1}
+
+if [[ -z $DEVICE ]]; then
+    echo "Need to Pass a device name as arg1." 1>&2
+    exit 1
+fi
+
+
+mkfs.ext4 ${DEVICE}1
+
+mkdir /mnt/iso
+mkdir /mnt/new_img
+
+trap "umount /mnt/new_img /mnt/iso" EXIT
+
+mount ${DEVICE}1 /mnt/new_img
+mount /dev/sr0 /mnt/iso
+
+mkdir /mnt/new_img/boot
+
+grub-install --boot-directory=/mnt/new_img/boot ${DEVICE}
+cp /mnt/iso/boot/vmlinuz /mnt/new_img/boot/
+cp /mnt/iso/boot/initrd /mnt/new_img/boot/
+
+cat >>/mnt/new_img/boot/grub/grub.cfg <<EOF
+set default="0"
+set timeout="5"
+
+menuentry "RancherOS" {
+  set root=(hd0,1)
+  linux /boot/vmlinuz
+  initrd /boot/initrd
+}
+EOF
+
+e2label ${DEVICE}1 RANCHER_STATE
+
