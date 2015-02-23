@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e -x
+
+BASE_DIR=${1}
+
+if [ -z $BASE_DIR ]; then
+    echo "Need base directory to place files" 1>&2
+    exit 1
+fi
+
+mkdir -p ${BASE_DIR}/lib/rancher/conf
+
+for yaml in 'vagrant.yml' 'rancher.yml';do 
+    cp /scripts/conf/$yaml ${BASE_DIR}/lib/rancher/conf/
+done

@@ -4,6 +4,7 @@ set -e
 set -x
 
 DEVICE=${1}
+ENV=${2}
 
 if [[ -z $DEVICE ]]; then
     echo "Need to Pass a device name as arg1." 1>&2
@@ -36,3 +37,15 @@ menuentry "RancherOS" {
   initrd /boot/initrd
 }
 EOF
+
+if [ -n ${ENV} ]; then
+    case ${ENV} in
+        "vagrant")
+            /scripts/vagrant-seed-data /mnt/new_img
+            ;;
+        *)
+            echo "$ENV is not a valid environment" 1>&2
+            exit 1
+            ;;
+    esac
+fi

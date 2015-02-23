@@ -1,0 +1,3 @@
+cloud_init:
+  datasources:
+    - file:/var/lib/rancher/conf/vagrant.yml
