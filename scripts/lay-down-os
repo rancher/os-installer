@@ -10,8 +10,7 @@ if [[ -z $DEVICE ]]; then
     exit 1
 fi
 
-
-mkfs.ext4 ${DEVICE}1
+mkfs.ext4 -L RANCHER_STATE ${DEVICE}1
 
 mkdir /mnt/iso
 mkdir /mnt/new_img
@@ -37,6 +36,3 @@ menuentry "RancherOS" {
   initrd /boot/initrd
 }
 EOF
-
-e2label ${DEVICE}1 RANCHER_STATE
-
