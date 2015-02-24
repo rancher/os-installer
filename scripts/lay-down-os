@@ -3,33 +3,55 @@
 set -e
 set -x
 
-DEVICE=${1}
-ENV=${2}
+export DEVICE=${1}
+export ENV=${2}
+MOUNTS=""
 
 if [[ -z $DEVICE ]]; then
     echo "Need to Pass a device name as arg1." 1>&2
     exit 1
 fi
 
-mkfs.ext4 -L RANCHER_STATE ${DEVICE}1
+format_device()
+{
+    mkfs.ext4 -L RANCHER_STATE ${DEVICE}1
+}
 
-mkdir /mnt/iso
-mkdir /mnt/new_img
+mount_device() 
+{
+    mkdir /mnt/new_img
+    mount ${DEVICE}1 /mnt/new_img
 
-trap "umount /mnt/new_img /mnt/iso" EXIT
+    echo "/mnt/new_img"
+}
 
-mount ${DEVICE}1 /mnt/new_img
-mount /dev/sr0 /mnt/iso
+mount_iso()
+{
+    mkdir /mnt/iso
+    mount /dev/sr0 /mnt/iso
 
-mkdir /mnt/new_img/boot
+    echo "/mnt/iso"
+}
 
-grub-install --boot-directory=/mnt/new_img/boot ${DEVICE}
-cp /mnt/iso/boot/vmlinuz /mnt/new_img/boot/
-cp /mnt/iso/boot/initrd /mnt/new_img/boot/
+create_boot_dirs()
+{
+    local base=$1
+    mkdir -p ${base}/boot/grub
+}
 
-cat >>/mnt/new_img/boot/grub/grub.cfg <<EOF
+install_grub() {
+    grub-install --boot-directory=/mnt/new_img/boot ${DEVICE}
+}
+
+install_from_iso()
+{
+    create_boot_dirs /mnt/new_img
+    cp /mnt/iso/boot/vmlinuz /mnt/new_img/boot/
+    cp /mnt/iso/boot/initrd /mnt/new_img/boot/
+
+cat >/mnt/new_img/boot/grub/grub.cfg <<EOF
 set default="0"
-set timeout="5"
+set timeout="2"
 
 menuentry "RancherOS" {
   set root=(hd0,1)
@@ -38,10 +60,56 @@ menuentry "RancherOS" {
 }
 EOF
 
+cat /mnt/new_img/boot/grub/grub.cfg
+
+}
+
+install_from_tar()
+{
+    create_boot_dirs /mnt/new_img
+
+    local version="$1"
+    cd /dist
+    tar -zxvf /dist/rancheros-${version}.tar.gz
+
+    sudo cp artifacts/initrd /mnt/new_img/boot/initrd-$version-rancheros
+    sudo cp artifacts/vmlinuz /mnt/new_img/boot/vmlinuz-$version-rancheros
+
+cat > /mnt/new_img/boot/grub/menu.lst <<EOF
+default 0
+timeout 0
+fallback 1
+
+hiddenmenu
+
+title RancherOS ${version}
+root (hd0)
+kernel /boot/vmlinuz-${version}-rancheros rancher.cloud_init.datasources=[ec2]
+initrd /boot/initrd-${version}-rancheros
+
+EOF
+}
+
 if [ -n ${ENV} ]; then
     case ${ENV} in
-        "vagrant")
+        "virtualbox-iso")
+            format_device
+            export MOUNTS="$MOUNTS $(mount_iso)"
+            export MOUNTS="$MOUNTS $(mount_device)"
+
+            trap "umount ${MOUNTS}" EXIT
+            install_grub
+            install_from_iso
+
             /scripts/vagrant-seed-data /mnt/new_img
+            ;;
+        "amazon-ebs")
+            format_device
+            export MOUNTS="$MOUNTS $(mount_device)"
+            trap "umount ${MOUNTS}" EXIT
+
+            # SO Hacking this right now
+            install_from_tar "0.1.1"
             ;;
         *)
             echo "$ENV is not a valid environment" 1>&2
