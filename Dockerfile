@@ -1,7 +1,11 @@
-FROM ubuntu:14.04.1
-ADD ./scripts/bootstrap /scripts/bootstrap
-RUN /scripts/bootstrap
+FROM debian:jessie
 ADD ./scripts /scripts
-ADD ./dist /dist
+RUN /scripts/bootstrap
 
-CMD ["/bin/bash"]
+ENV RANCHEROS_VERSION "v0.1.1"
+
+ADD https://github.com/rancherio/os/releases/download/v0.1.1/vmlinuz /dist/vmlinuz
+ADD https://github.com/rancherio/os/releases/download/v0.1.1/initrd /dist/initrd
+
+ENTRYPOINT ["/scripts/lay-down-os"]
+CMD ["/dev/sda"]

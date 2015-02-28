@@ -6,6 +6,8 @@ set -x
 export DEVICE=${1}
 export ENV=${2}
 MOUNTS=""
+BASE_DIR="/mnt/new_img"
+VERSION=${RANCHEROS_VERSION}
 
 if [[ -z $DEVICE ]]; then
     echo "Need to Pass a device name as arg1." 1>&2
@@ -25,91 +27,78 @@ mount_device()
     echo "/mnt/new_img"
 }
 
-mount_iso()
-{
-    mkdir /mnt/iso
-    mount /dev/sr0 /mnt/iso
-
-    echo "/mnt/iso"
-}
-
 create_boot_dirs()
 {
-    local base=$1
-    mkdir -p ${base}/boot/grub
+    mkdir -p ${BASE_DIR}/boot/grub
 }
 
 install_grub() {
     grub-install --boot-directory=/mnt/new_img/boot ${DEVICE}
 }
 
-install_from_iso()
-{
-    create_boot_dirs /mnt/new_img
-    cp /mnt/iso/boot/vmlinuz /mnt/new_img/boot/
-    cp /mnt/iso/boot/initrd /mnt/new_img/boot/
-
-cat >/mnt/new_img/boot/grub/grub.cfg <<EOF
+grub2_config(){
+cat >${BASE_DIR}/boot/grub/grub.cfg <<EOF
 set default="0"
 set timeout="2"
 
 menuentry "RancherOS" {
   set root=(hd0,1)
-  linux /boot/vmlinuz
-  initrd /boot/initrd
+  linux /boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
+  initrd /boot/initrd-${RANCHEROS_VERSION}-rancheros
 }
 EOF
-
-cat /mnt/new_img/boot/grub/grub.cfg
-
 }
 
-install_from_tar()
+install_rancher()
 {
-    create_boot_dirs /mnt/new_img
+    sudo cp /dist/initrd /mnt/new_img/boot/initrd-${RANCHEROS_VERSION}-rancheros
+    sudo cp /dist/vmlinuz /mnt/new_img/boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
+}
 
-    local version="$1"
-    cd /dist
-    tar -zxvf /dist/rancheros-${version}.tar.gz
-
-    sudo cp artifacts/initrd /mnt/new_img/boot/initrd-$version-rancheros
-    sudo cp artifacts/vmlinuz /mnt/new_img/boot/vmlinuz-$version-rancheros
-
+pvgrub_config()
+{
 cat > /mnt/new_img/boot/grub/menu.lst <<EOF
 default 0
 timeout 0
-fallback 1
 
 hiddenmenu
 
-title RancherOS ${version}
+title RancherOS ${RANCHEROS_VERSION}
 root (hd0)
-kernel /boot/vmlinuz-${version}-rancheros rancher.cloud_init.datasources=[ec2]
-initrd /boot/initrd-${version}-rancheros
+kernel /boot/vmlinuz-${RANCHEROS_VERSION}-rancheros rancher.cloud_init.datasources=[ec2]
+initrd /boot/initrd-${RANCHEROS_VERSION}-rancheros
 
 EOF
+}
+
+mount()
+{
+    export MOUNTS="$MOUNTS $(mount_device)"
+    trap "umount ${MOUNTS}" EXIT
+}
+
+format_and_mount()
+{
+    format_device
+    mount
+    create_boot_dirs
 }
 
 if [ -n ${ENV} ]; then
     case ${ENV} in
         "virtualbox-iso")
-            format_device
-            export MOUNTS="$MOUNTS $(mount_iso)"
-            export MOUNTS="$MOUNTS $(mount_device)"
-
-            trap "umount ${MOUNTS}" EXIT
+            /scripts/set-disk-partions ${DEVICE}
+            format_and_mount
             install_grub
-            install_from_iso
-
+            grub2_config
             /scripts/vagrant-seed-data /mnt/new_img
             ;;
         "amazon-ebs")
-            format_device
-            export MOUNTS="$MOUNTS $(mount_device)"
-            trap "umount ${MOUNTS}" EXIT
-
-            # SO Hacking this right now
-            install_from_tar "0.1.1"
+            format_and_mount
+            pvgrub_config
+            ;;
+        "rancher-upgrade")
+            mount 
             ;;
         *)
             echo "$ENV is not a valid environment" 1>&2
@@ -117,3 +106,5 @@ if [ -n ${ENV} ]; then
             ;;
     esac
 fi
+
+install_rancher
