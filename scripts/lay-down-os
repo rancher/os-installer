@@ -5,7 +5,6 @@ set -x
 
 export DEVICE=${1}
 export ENV=${2}
-MOUNTS=""
 BASE_DIR="/mnt/new_img"
 VERSION=${RANCHEROS_VERSION}
 
@@ -21,10 +20,8 @@ format_device()
 
 mount_device() 
 {
-    mkdir /mnt/new_img
-    mount ${DEVICE}1 /mnt/new_img
-
-    echo "/mnt/new_img"
+    mkdir -p ${BASE_DIR}
+    mount ${DEVICE}1 ${BASE_DIR}
 }
 
 create_boot_dirs()
@@ -51,8 +48,8 @@ EOF
 
 install_rancher()
 {
-    sudo cp /dist/initrd /mnt/new_img/boot/initrd-${RANCHEROS_VERSION}-rancheros
-    sudo cp /dist/vmlinuz /mnt/new_img/boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
+    cp /dist/initrd /mnt/new_img/boot/initrd-${RANCHEROS_VERSION}-rancheros
+    cp /dist/vmlinuz /mnt/new_img/boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
 }
 
 pvgrub_config()
@@ -71,16 +68,11 @@ initrd /boot/initrd-${RANCHEROS_VERSION}-rancheros
 EOF
 }
 
-mount()
-{
-    export MOUNTS="$MOUNTS $(mount_device)"
-    trap "umount ${MOUNTS}" EXIT
-}
-
 format_and_mount()
 {
     format_device
-    mount
+    mount_device
+    trap "umount ${BASE_DIR}" EXIT
     create_boot_dirs
 }
 
@@ -90,7 +82,7 @@ if [ -n ${ENV} ]; then
             format_and_mount
             install_grub
             grub2_config
-            /scripts/vagrant-seed-data /mnt/new_img
+            /scripts/vagrant-seed-data $BASE_DIR
             ;;
         "amazon-ebs")
             format_and_mount
