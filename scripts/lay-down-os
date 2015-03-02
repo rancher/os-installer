@@ -87,7 +87,6 @@ format_and_mount()
 if [ -n ${ENV} ]; then
     case ${ENV} in
         "virtualbox-iso")
-            /scripts/set-disk-partions ${DEVICE}
             format_and_mount
             install_grub
             grub2_config
