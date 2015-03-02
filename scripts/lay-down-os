@@ -5,6 +5,8 @@ set -x
 
 export DEVICE=${1}
 export ENV=${2}
+export ROLLBACK_VERSION=${3}
+
 BASE_DIR="/mnt/new_img"
 VERSION=${RANCHEROS_VERSION}
 
@@ -34,16 +36,31 @@ install_grub() {
 }
 
 grub2_config(){
-cat >${BASE_DIR}/boot/grub/grub.cfg <<EOF
+local grub_cfg=${BASE_DIR}/boot/grub/grub.cfg
+cat >$grub_cfg <<EOF
 set default="0"
 set timeout="2"
+#set fallback=1
 
-menuentry "RancherOS" {
+menuentry "RancherOS-current" {
   set root=(hd0,1)
   linux /boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
   initrd /boot/initrd-${RANCHEROS_VERSION}-rancheros
 }
+
 EOF
+
+if [ ! -z $ROLLBACK_VERSION ]; then
+    sed -i 's/^#set/set/' ${grub_cfg}
+cat >>$grub_cfg <<EOF
+menuentry "RancherOS-rollback" {
+  set root=(hd0,1)
+  linux /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros
+  initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
+}
+EOF
+fi
+
 }
 
 install_rancher()
@@ -54,18 +71,30 @@ install_rancher()
 
 pvgrub_config()
 {
-cat > /mnt/new_img/boot/grub/menu.lst <<EOF
+    local grub_file=/mnt/new_img/boot/grub/menu.lst
+cat > $grub_file<<EOF
 default 0
 timeout 0
+#fallback 1
 
 hiddenmenu
 
-title RancherOS ${RANCHEROS_VERSION}
+title RancherOS ${RANCHEROS_VERSION}-(current)
 root (hd0)
 kernel /boot/vmlinuz-${RANCHEROS_VERSION}-rancheros rancher.cloud_init.datasources=[ec2]
 initrd /boot/initrd-${RANCHEROS_VERSION}-rancheros
 
 EOF
+
+if [ ! -z $ROLLBACK_VERSION ]; then
+    sed -i 's/^#\(fallback\)/\1/' $grub_file
+cat >> $grub_file<<EOF
+title RancherOS ${ROLLBACK_VERSION}-(rollback)
+root (hd0)
+kernel /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros rancher.cloud_init.datasources=[ec2]
+initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
+EOF
+fi
 }
 
 format_and_mount()
@@ -89,7 +118,12 @@ if [ -n ${ENV} ]; then
             pvgrub_config
             ;;
         "rancher-upgrade")
-            mount 
+            mount_device 
+            if [ -e ${BASE_DIR}/boot/grub/grub.cfg ]; then
+                grub2_config
+            else
+                pvgrub_config
+            fi
             ;;
         *)
             echo "$ENV is not a valid environment" 1>&2
