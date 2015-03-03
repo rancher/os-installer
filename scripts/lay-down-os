@@ -3,27 +3,45 @@
 set -e
 set -x
 
-export DEVICE=${1}
-export ENV=${2}
-export ROLLBACK_VERSION=${3}
+
+while getopts "c:d:t:r:" OPTION
+do
+    case $OPTION in 
+        c) CLOUD_CONFIG="$OPTARG" ;;
+        d) DEVICE="$OPTARG" ;;
+        t) ENV="$OPTARG" ;;
+        r) ROLLBACK_VERSION="$OPTARG" ;;
+        *) exit 1 ;;
+    esac
+done
 
 BASE_DIR="/mnt/new_img"
 VERSION=${RANCHEROS_VERSION}
 
-if [[ -z $DEVICE ]]; then
-    echo "Need to Pass a device name as arg1." 1>&2
-    exit 1
-fi
+device_defined()
+{
+    if [[ -z "$1" ]]; then
+        echo "Need to Pass a device name as arg1." 1>&2
+        exit 1
+    fi
+}
 
 format_device()
 {
-    mkfs.ext4 -L RANCHER_STATE ${DEVICE}1
+    mkfs.ext4 -F -L RANCHER_STATE ${DEVICE}1
 }
 
 mount_device() 
 {
+    local label=RANCHER_STATE
+
     mkdir -p ${BASE_DIR}
-    mount ${DEVICE}1 ${BASE_DIR}
+
+    if [ "$(lsblk -o name|grep RANCHER_BOOT | wc -l)" -eq "1" ]; then
+        label=RANCHER_BOOT
+    fi
+    
+    mount -L ${label} ${BASE_DIR}
 }
 
 create_boot_dirs()
@@ -99,19 +117,25 @@ fi
 
 format_and_mount()
 {
+    device_defined ${DEVICE}
     format_device
     mount_device
     trap "umount ${BASE_DIR}" EXIT
     create_boot_dirs
 }
 
+iso_install()
+{
+    format_and_mount
+    install_grub
+    grub2_config
+}
+
 if [ -n ${ENV} ]; then
     case ${ENV} in
         "virtualbox-iso")
-            format_and_mount
-            install_grub
-            grub2_config
-            /scripts/vagrant-seed-data $BASE_DIR
+            iso_install
+            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG
             ;;
         "amazon-ebs")
             format_and_mount
