@@ -1,4 +1,4 @@
-#os-install: The RancherOS installer
+#os-installer: Installs RancherOS
 -----
 
 ##Purpose:
