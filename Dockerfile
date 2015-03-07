@@ -8,4 +8,3 @@ ADD https://github.com/rancherio/os/releases/download/${RANCHEROS_VERSION}/vmlin
 ADD https://github.com/rancherio/os/releases/download/${RANCHEROS_VERSION}/initrd /dist/initrd
 
 ENTRYPOINT ["/scripts/lay-down-os"]
-CMD ["/dev/sda"]

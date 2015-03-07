@@ -16,7 +16,6 @@ do
 done
 
 BASE_DIR="/mnt/new_img"
-VERSION=${RANCHEROS_VERSION}
 
 device_defined()
 {
@@ -124,17 +123,12 @@ format_and_mount()
     create_boot_dirs
 }
 
-iso_install()
-{
-    format_and_mount
-    install_grub
-    grub2_config
-}
-
 if [ -n ${ENV} ]; then
     case ${ENV} in
-        "virtualbox-iso")
-            iso_install
+        "generic")
+            format_and_mount
+            install_grub
+            grub2_config
             /scripts/seed-data $BASE_DIR $CLOUD_CONFIG
             ;;
         "amazon-ebs")
@@ -143,11 +137,8 @@ if [ -n ${ENV} ]; then
             ;;
         "rancher-upgrade")
             mount_device 
-            if [ -e ${BASE_DIR}/boot/grub/grub.cfg ]; then
-                grub2_config
-            else
-                pvgrub_config
-            fi
+            grub2_config
+            pvgrub_config
             ;;
         *)
             echo "$ENV is not a valid environment" 1>&2
