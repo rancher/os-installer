@@ -5,7 +5,7 @@
 
 This repository provides scripts for the container used to install RancherOS.
 
-The container can be used directly, but there is a wrapper in the Operating system `/usr/sbin/rancheros-install` that handles calling things in the right order. If you just want to disect it, start with the rancheros-install script and look in here to see what is being called.
+The container can be used directly, but there is a wrapper in RancherOS, `/usr/sbin/rancheros-install`, that handles calling things in the right order. If you just want to disect it, start with the rancheros-install script and look in here to see what is being called.
 
 ##Basics
 
@@ -13,15 +13,15 @@ When booting from the ISO file RancherOS runs completely from memory. In order t
 
 When booting, RancherOS looks for a device labeled "RANCHER_STATE". If it finds a volume with that labeled the OS will mount the device and use it to store state. 
 
-The scripts in this container will create a device labeled RANCHER_STATE and make it bootable. The two supported methods, are virtualbox-iso-vagrant and amazon-ebs. The approach can be translated to suit different needs.
+The scripts in this container will create a device labeled RANCHER_STATE and make it bootable. The two supported methods, are generic and amazon-ebs. The approach can be translated to suit different needs.
 
-The virtualbox-iso install type follows these steps:
+The generic install type follows these steps:
 
 1. ) partition device with a single partition the size of the disk.
 2. ) format ext4 and label partition as RANCHER_STATE
 3. ) Install grub2 on device
-4. ) Place Kernel/Initrd and grub.cfg inside /boot on the device.
-5. ) Seeds the cloud-init data so that the vagrant insecure key can be used.
+4. ) Place kernel/initrd and grub.cfg inside /boot on the device.
+5. ) Seeds the cloud-init data so that a ssh key or other RancherOS configuration can be set.
 
 The amazon-ebs approach follows these steps:
 
