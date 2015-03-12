@@ -34,7 +34,7 @@ The amazon-ebs approach follows these steps:
 
 ## Usage
 
-**Warning:** Using this container direclty can be like running with scissors...
+**Warning:** Using this container directly can be like running with scissors...
 
 ```
  # Partition disk without prompting of any sort:
@@ -43,9 +43,6 @@ The amazon-ebs approach follows these steps:
 
  # install 
  sudo system-docker run --privileged --net=host -it --volumes-from=user-volumes rancher/os-installer:<version> -d <device> -t <install_type> -c <cloud file>
- 
- #Upgrade
- sudo system-docker run --privileged --net=host -it rancher/os-installer:<version> -t rancher-upgrade -r <rollback_version>
  
 ```
 
