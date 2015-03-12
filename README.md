@@ -30,12 +30,7 @@ The amazon-ebs approach follows these steps:
 3. ) Add Kernel and Initrd
 4. ) Sets Rancher to look for EC2 cloud-init data.
 
-The upgrade process looks like:
 
-Assumes the device is bootable.
-
-1. ) Mount RANCHER_BOOT if found, else RANCHER_STATE.
-2. ) Clobber the grub2 or menu.lst config with current version and the rollback version if provided. 
 
 ## Usage
 
