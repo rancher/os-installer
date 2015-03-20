@@ -49,7 +49,7 @@ create_boot_dirs()
 }
 
 install_grub() {
-    grub-install --boot-directory=/mnt/new_img/boot ${DEVICE}
+    grub-install --boot-directory=${BASE_DIR}/boot ${DEVICE}
 }
 
 grub2_config(){
@@ -137,6 +137,7 @@ if [ -n ${ENV} ]; then
             ;;
         "rancher-upgrade")
             mount_device 
+            create_boot_dirs
             grub2_config
             pvgrub_config
             ;;
