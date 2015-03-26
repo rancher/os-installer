@@ -48,7 +48,12 @@ The amazon-ebs approach follows these steps:
 
 The installation process requires a cloud config file. It needs to be placed in either /home/rancher/ or /opt/. The installer make use of the user-volumes to facilitate files being available between system containers.
 
- 
+## Contact
+For bugs, questions, comments, corrections, suggestions, etc., open an issue in
+ [rancherio/os](//github.com/rancherio/os/issues) with a title starting with `[os-installer] `.
+
+Or just [click here](//github.com/rancherio/os/issues/new?title=%5Bos-installer%5D%20) to create a new issue.
+
 ## License
 Copyright (c) 2014-2015 [Rancher Labs, Inc.](http://rancher.com)
 
