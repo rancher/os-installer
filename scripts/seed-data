@@ -12,6 +12,10 @@ fi
 
 mkdir -p ${BASE_DIR}/lib/rancher/conf
 
-for yaml in "${CLOUD_DATA}" '/scripts/conf/rancher.yml';do 
-    cp $yaml ${BASE_DIR}/lib/rancher/conf/
-done
+cat >${BASE_DIR}/lib/rancher/conf/rancher.yml <<EOF
+cloud_init:
+  datasources:
+    - file:/var/lib/rancher/conf/$(basename ${CLOUD_DATA})
+EOF
+
+cp ${CLOUD_DATA} ${BASE_DIR}/lib/rancher/conf/
