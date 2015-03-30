@@ -38,11 +38,11 @@ The amazon-ebs approach follows these steps:
 
 ```
  # Partition disk without prompting of any sort:
- sudo system-docker run --privileged --net=host -it --entrypoint=/scripts/set-disk-partitions rancher/os-installer:<version> <device>
+ sudo system-docker run --privileged --net=host -it --entrypoint=/scripts/set-disk-partitions rancher/os:<version> <device>
 
 
  # install 
- sudo system-docker run --privileged --net=host -it --volumes-from=user-volumes rancher/os-installer:<version> -d <device> -t <install_type> -c <cloud file>
+ sudo system-docker run --privileged --net=host -it --volumes-from=user-volumes rancher/os:<version> -d <device> -t <install_type> -c <cloud file>
  
 ```
 
