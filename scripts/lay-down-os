@@ -27,7 +27,7 @@ device_defined()
 
 format_device()
 {
-    mkfs.ext4 -F -L RANCHER_STATE ${DEVICE}1
+    mkfs.ext4 -i 4096 -F -L RANCHER_STATE ${DEVICE}1
 }
 
 mount_device() 
