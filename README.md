@@ -44,8 +44,8 @@ The amazon-ebs approach follows these steps:
 
  # install 
  sudo system-docker run --privileged --net=host -it --volumes-from=user-volumes \
-                    rancher/os:<version> -d <device> -t <install_type> -c <cloud-config file> -f <file1,file2,file3>
- 
+                    rancher/os:<version> -d <device> -t <install_type> -c <cloud-config file> \
+                    -f <file1,file2,file3>
 ```
 
 The installation process requires a cloud config file. It needs to be placed in either /home/rancher/ or /opt/. The installer make use of the user-volumes to facilitate files being available between system containers.
