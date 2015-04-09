@@ -4,9 +4,10 @@ set -e
 set -x
 
 
-while getopts "c:d:t:r:" OPTION
+while getopts "f:c:d:t:r:" OPTION
 do
     case $OPTION in 
+        f) FILES="$OPTARG" ;;
         c) CLOUD_CONFIG="$OPTARG" ;;
         d) DEVICE="$OPTARG" ;;
         t) ENV="$OPTARG" ;;
@@ -129,7 +130,7 @@ if [ -n ${ENV} ]; then
             format_and_mount
             install_grub
             grub2_config
-            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG
+            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG $FILES
             ;;
         "amazon-ebs")
             format_and_mount
