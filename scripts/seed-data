@@ -10,12 +10,6 @@ if [ -z $BASE_DIR ]; then
     exit 1
 fi
 
-mkdir -p ${BASE_DIR}/lib/rancher/conf
+mkdir -p ${BASE_DIR}/lib/rancher/conf/cloud-config.d
 
-cat >${BASE_DIR}/lib/rancher/conf/rancher.yml <<EOF
-cloud_init:
-  datasources:
-    - file:/var/lib/rancher/conf/$(basename ${CLOUD_DATA})
-EOF
-
-cp ${CLOUD_DATA} ${BASE_DIR}/lib/rancher/conf/
+cp ${CLOUD_DATA} ${BASE_DIR}/lib/rancher/conf/cloud-config.d/
