@@ -1,11 +1,11 @@
 #!/bin/bash
-
 set -e -x
 
 BASE_DIR=${1}
 CLOUD_DATA=${2}
+IFS=',' read -ra FILES <<< "${3}"
 
-if [ -z $BASE_DIR ]; then
+if [ -z ${BASE_DIR} ]; then
     echo "Need base directory to place files" 1>&2
     exit 1
 fi
@@ -17,5 +17,9 @@ cloud_init:
   datasources:
     - file:/var/lib/rancher/conf/$(basename ${CLOUD_DATA})
 EOF
+
+for f in ${FILES[@]}; do
+  cp -a ${f} ${BASE_DIR}/lib/rancher/conf/
+done
 
 cp ${CLOUD_DATA} ${BASE_DIR}/lib/rancher/conf/
