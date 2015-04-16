@@ -76,7 +76,7 @@ set timeout="1"
 
 menuentry "RancherOS-current" {
   set root=(hd0,msdos1)
-  linux /boot/vmlinuz-${RANCHEROS_VERSION}-rancheros ${append_line} console=ttyS0
+  linux /boot/vmlinuz-${RANCHEROS_VERSION}-rancheros ${append_line} console=tty0 console=ttyS0
   initrd /boot/initrd-${RANCHEROS_VERSION}-rancheros
 }
 
@@ -87,7 +87,7 @@ if [ ! -z $ROLLBACK_VERSION ]; then
 cat >>$grub_cfg <<EOF
 menuentry "RancherOS-rollback" {
   set root=(hd0,msdos1)
-  linux /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros ${append_line} console=ttyS0
+  linux /boot/vmlinuz-${ROLLBACK_VERSION}-rancheros ${append_line} console=tty0 console=ttyS0
   initrd /boot/initrd-${ROLLBACK_VERSION}-rancheros
 }
 EOF
