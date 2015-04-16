@@ -3,5 +3,4 @@
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update 
-apt-get install -y grub2
-
+apt-get install -y grub2 parted
