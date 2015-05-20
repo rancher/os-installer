@@ -4,9 +4,11 @@ set -e
 set -x
 
 
-while getopts "c:d:t:r:o:p:" OPTION
+while getopts "i:f:c:d:t:r:o:p:" OPTION
 do
     case $OPTION in 
+        i) DIST="$OPTARG" ;;
+        f) FILES="$OPTARG" ;;
         c) CLOUD_CONFIG="$OPTARG" ;;
         d) DEVICE="$OPTARG" ;;
         o) OEM="$OPTARG" ;;
@@ -17,6 +19,7 @@ do
     esac
 done
 
+DIST=${DIST:-/dist}
 BASE_DIR="/mnt/new_img"
 # TODO: Change this to a number so that users can specify.
 # Will need to make it so that our builds and packer APIs remain consistent.
@@ -97,8 +100,8 @@ fi
 
 install_rancher()
 {
-    cp /dist/initrd /mnt/new_img/boot/initrd-${RANCHEROS_VERSION}-rancheros
-    cp /dist/vmlinuz /mnt/new_img/boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
+    cp ${DIST}/initrd /mnt/new_img/boot/initrd-${RANCHEROS_VERSION}-rancheros
+    cp ${DIST}/vmlinuz /mnt/new_img/boot/vmlinuz-${RANCHEROS_VERSION}-rancheros
 }
 
 pvgrub_config()
@@ -143,7 +146,7 @@ if [ -n ${ENV} ]; then
         "generic")
             format_and_mount
             install_grub
-            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG
+            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG $FILES
             ;;
         "amazon-ebs-pv"|"amazon-ebs-hvm")
             format_and_mount
@@ -151,12 +154,12 @@ if [ -n ${ENV} ]; then
                 install_grub
             fi
             # AWS Networking recommends disabling.
-            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG
+            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG $FILES
             ;;
         "googlecompute")
             format_and_mount
             install_grub
-            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG
+            /scripts/seed-data $BASE_DIR $CLOUD_CONFIG $FILES
             ;;
         "bootstrap")
             mount_device true

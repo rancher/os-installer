@@ -38,15 +38,21 @@ The amazon-ebs approach follows these steps:
 
 ```
  # Partition disk without prompting of any sort:
- sudo system-docker run --privileged --net=host -it --entrypoint=/scripts/set-disk-partitions rancher/os:<version> <device>
+ docker run --privileged -it --entrypoint=/scripts/set-disk-partitions rancher/os:<version> <device>
 
 
  # install 
- sudo system-docker run --privileged --net=host -it --volumes-from=user-volumes rancher/os:<version> -d <device> -t <install_type> -c <cloud file>
- 
+ docker run --privileged -it -v /home:/home -v /opt:/opt \
+        rancher/os:<version> -d <device> -t <install_type> -c <cloud-config file> \
+        -i /custom/dist/dir \
+        -f </src/path1:/dst/path1,/src/path2:/dst/path2,/src/path3:/dst/path3>
 ```
 
-The installation process requires a cloud config file. It needs to be placed in either /home/rancher/ or /opt/. The installer make use of the user-volumes to facilitate files being available between system containers.
+The installation process requires a cloud config file. It needs to be placed in either /home/rancher/ or /opt/. The installer make use of the user-volumes to facilitate files being available between system containers. `-i` and `-f` options are, well, optional. 
+
+By providing `-i` (or `DIST` env var) you specify the path to your custom `vmlinuz` and `initrd`. 
+  
+`-f` allows you to copy arbitrary files to the target root filesystem.
 
 ## Contact
 For bugs, questions, comments, corrections, suggestions, etc., open an issue in
