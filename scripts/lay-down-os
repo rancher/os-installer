@@ -140,7 +140,7 @@ format_and_mount()
     create_boot_dirs
 }
 
-KERNEL_ARGS=""
+KERNEL_ARGS=${KERNEL_ARGS:-""}
 if [ -n ${ENV} ]; then
     case ${ENV} in
         "generic")
@@ -164,7 +164,7 @@ if [ -n ${ENV} ]; then
         "bootstrap")
             mount_device true
             create_boot_dirs
-            KERNEL_ARGS="rancher.cloud_init.datasources=[ec2,gce]"
+            KERNEL_ARGS="${KERNEL_ARGS} rancher.cloud_init.datasources=[ec2,gce]"
             ;;
         "rancher-upgrade")
             mount_device 
