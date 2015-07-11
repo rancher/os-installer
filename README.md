@@ -56,9 +56,9 @@ By providing `-i` (or `DIST` env var) you specify the path to your custom `vmlin
 
 ## Contact
 For bugs, questions, comments, corrections, suggestions, etc., open an issue in
- [rancherio/os](//github.com/rancherio/os/issues) with a title starting with `[os-installer] `.
+ [rancher/os](//github.com/rancher/os/issues) with a title starting with `[os-installer] `.
 
-Or just [click here](//github.com/rancherio/os/issues/new?title=%5Bos-installer%5D%20) to create a new issue.
+Or just [click here](//github.com/rancher/os/issues/new?title=%5Bos-installer%5D%20) to create a new issue.
 
 ## License
 Copyright (c) 2014-2015 [Rancher Labs, Inc.](http://rancher.com)
